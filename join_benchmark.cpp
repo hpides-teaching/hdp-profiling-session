@@ -6,28 +6,22 @@
 #include <string_view>
 #include <unordered_set>
 
-struct Tuple {
-  uint64_t id;
-  uint64_t timestamp;
-  std::string name;
-};
-
 constexpr size_t LEFT_SIDE_TUPLES = 1000;
 constexpr size_t RIGHT_SIDE_TUPLES = 100;
-constexpr size_t STRING_LENGTH = 100;
+constexpr size_t STRING_LENGTH = 20;
 constexpr double JOIN_PARTNER_PROBABILITY = 0.5;
 
-size_t count_tuples_with_join_partners(std::vector<Tuple> left_side, std::vector<Tuple> right_side) {
+size_t count_tuples_with_join_partners(std::vector<std::string> left_side, std::vector<std::string> right_side) {
   size_t left_tuples_with_partner = 0;
 
   std::unordered_set<std::string> right_names;
   right_names.reserve(right_side.size());
-  for (Tuple tup : right_side) {
-    right_names.emplace(tup.name);
+  for (auto value : right_side) {
+    right_names.emplace(value);
   }
 
-  for (Tuple tup : left_side) {
-    if (right_names.contains(tup.name)) {
+  for (auto value : left_side) {
+    if (right_names.contains(value)) {
       ++left_tuples_with_partner;
     }
   }
@@ -47,34 +41,24 @@ uint64_t int_between_0_and(T&& rng, uint64_t max) {
 }
 
 static void BM_Join(benchmark::State& state) {
-  std::vector<Tuple> left_tuples(LEFT_SIDE_TUPLES);
-  std::vector<Tuple> right_tuples(RIGHT_SIDE_TUPLES);
+  std::vector<std::string> left_tuples(LEFT_SIDE_TUPLES);
+  std::vector<std::string> right_tuples(RIGHT_SIDE_TUPLES);
 
   std::mt19937_64 rng{std::random_device{}()};
 
-  for (auto& tup : left_tuples) {
-    tup.id = rng();
-    tup.timestamp = rng();
-
-    tup.name.resize(STRING_LENGTH);
-    std::generate(tup.name.begin(), tup.name.end(),
-                  [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
+  for (auto& value : left_tuples) {
+    value.resize(STRING_LENGTH);
+    std::generate(value.begin(), value.end(), [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
   }
 
   std::bernoulli_distribution join_partner_distribution(JOIN_PARTNER_PROBABILITY);
 
-  for (auto& tup : right_tuples) {
-    tup.id = rng();
-    tup.timestamp = rng();
-
-    tup.name.resize(STRING_LENGTH);
+  for (auto& value : right_tuples) {
+    value.resize(STRING_LENGTH);
     if (join_partner_distribution(rng)) {
-      tup.name = left_tuples[int_between_0_and(rng, left_tuples.size())].name;
+      value = left_tuples[int_between_0_and(rng, left_tuples.size())];
     } else {
-      std::generate(tup.name.begin(), tup.name.end(), [&]() {
-        auto index = rng() % ALPHABET.size();
-        return ALPHABET[index];
-      });
+      std::generate(value.begin(), value.end(), [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
     }
   }
 
