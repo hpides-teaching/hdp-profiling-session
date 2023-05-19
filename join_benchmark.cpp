@@ -13,21 +13,21 @@ constexpr size_t STRING_LENGTH = 20;
 constexpr double JOIN_PARTNER_PROBABILITY = 0.5;
 
 size_t count_tuples_with_join_partners(std::vector<std::string> left_side, std::vector<std::string> right_side) {
-  size_t left_tuples_with_partner = 0;
+  size_t right_tuples_with_partner = 0;
 
-  std::unordered_set<std::string> right_names;
-  right_names.reserve(right_side.size());
-  for (auto value : right_side) {
-    right_names.emplace(value);
+  std::unordered_set<std::string> left_names;
+  left_names.reserve(left_side.size());
+  for (auto value : left_side) {
+    left_names.emplace(value);
   }
 
-  for (auto value : left_side) {
-    if (right_names.contains(value)) {
-      ++left_tuples_with_partner;
+  for (auto value : right_side) {
+    if (left_names.contains(value)) {
+      ++right_tuples_with_partner;
     }
   }
 
-  return left_tuples_with_partner;
+  return right_tuples_with_partner;
 }
 
 /******************************************************************************
