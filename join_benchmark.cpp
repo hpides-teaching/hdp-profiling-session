@@ -3,11 +3,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <span>
 #include <string_view>
 #include <unordered_set>
 
-constexpr size_t LEFT_SIDE_TUPLES = 1000;
-constexpr size_t RIGHT_SIDE_TUPLES = 100;
+constexpr size_t LEFT_SIDE_TUPLES = 1'000'000;
+constexpr size_t RIGHT_SIDE_TUPLES = 100'000;
 constexpr size_t STRING_LENGTH = 20;
 constexpr double JOIN_PARTNER_PROBABILITY = 0.5;
 
@@ -40,25 +41,28 @@ uint64_t int_between_0_and(T&& rng, uint64_t max) {
   return rng() % max;
 }
 
-static void BM_Join(benchmark::State& state) {
-  std::vector<std::string> left_tuples(LEFT_SIDE_TUPLES);
-  std::vector<std::string> right_tuples(RIGHT_SIDE_TUPLES);
+void BM_Join(benchmark::State& state) {
+  static std::vector<std::string> left_tuples(LEFT_SIDE_TUPLES);
+  static std::vector<std::string> right_tuples(RIGHT_SIDE_TUPLES);
 
-  std::mt19937_64 rng{std::random_device{}()};
+  // Only generate test data on first run to reduce influence on profiling results
+  if (left_tuples[0].size() == 0) {
+    std::mt19937_64 rng{std::random_device{}()};
 
-  for (auto& value : left_tuples) {
-    value.resize(STRING_LENGTH);
-    std::generate(value.begin(), value.end(), [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
-  }
-
-  std::bernoulli_distribution join_partner_distribution(JOIN_PARTNER_PROBABILITY);
-
-  for (auto& value : right_tuples) {
-    value.resize(STRING_LENGTH);
-    if (join_partner_distribution(rng)) {
-      value = left_tuples[int_between_0_and(rng, left_tuples.size())];
-    } else {
+    for (auto& value : left_tuples) {
+      value.resize(STRING_LENGTH);
       std::generate(value.begin(), value.end(), [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
+    }
+
+    std::bernoulli_distribution join_partner_distribution(JOIN_PARTNER_PROBABILITY);
+
+    for (auto& value : right_tuples) {
+      value.resize(STRING_LENGTH);
+      if (join_partner_distribution(rng)) {
+        value = left_tuples[int_between_0_and(rng, left_tuples.size())];
+      } else {
+        std::generate(value.begin(), value.end(), [&]() { return ALPHABET[int_between_0_and(rng, ALPHABET.size())]; });
+      }
     }
   }
 
@@ -71,6 +75,6 @@ static void BM_Join(benchmark::State& state) {
       benchmark::Counter(static_cast<double>(state.iterations() * (left_tuples.size() + right_tuples.size())),
                          benchmark::Counter::kIsRate | benchmark::Counter::kInvert);
 }
-BENCHMARK(BM_Join);
+BENCHMARK(BM_Join)->Iterations(20);
 
 BENCHMARK_MAIN();
