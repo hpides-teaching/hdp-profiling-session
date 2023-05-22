@@ -9,19 +9,11 @@ RUN apt update && apt install -y \
     gcc-11 g++-11 gdb cmake libc6-dbg \
     linux-tools-common linux-tools-generic
 
-# perf. This needs to be tied to the host we are running on.
-# Replace "5.15.0-58-generic" with the output of `uname -r`.
-RUN apt update && apt install -y linux-tools-5.15.0-58-generic
-
-# VTune (https://www.intel.com/content/www/us/en/docs/vtune-profiler/installation-guide/2023-0/package-managers.html)
-RUN wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && \
-    apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && \
-    echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list && \
-    add-apt-repository "deb https://apt.repos.intel.com/oneapi all main" && \
-    apt update && \
-    apt install -y intel-oneapi-vtune
-
-RUN useradd --create-home --shell /bin/bash hdp && \
-    echo "hdp:123456" | chpasswd
+# perf. This is a bit hacky because of the host and docker kernel mismatch.
+# If this fails when building the docker, check which path you have in the container.
+RUN ln -sf /usr/lib/linux-tools/5.15.0-72-generic/perf /usr/bin/perf && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11 && \
+    useradd --create-home --shell /bin/bash hdp && echo "hdp:123456" | chpasswd
 
 ENTRYPOINT service ssh restart && tail -f /dev/null
