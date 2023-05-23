@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e:
+set -e
 
 if [ "$#" -ne 1 ]; then
     echo "Need to specify /path/to/users.txt"
