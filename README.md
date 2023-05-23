@@ -2,19 +2,18 @@
 
 Small code example to show how to use `perf` in our HDP lecture.
 
-To build and start the Docker container, run:
+To build the Docker container, run:
 ```shell
 # Build
-DOCKER_BUILDKIT=1 docker build -t hdp-profiling .
-
-# Run
-docker run -d \
-    -v $(pwd):/hdp-profiling-session \
-    --privileged \
-    -p 8000:22 \
-    --restart always \
-    --name "hdp-profiling" \
-    hdp-profiling
+$ DOCKER_BUILDKIT=1 docker build -t hdp-profiling .
 ```
 
-This will open port 8000 on the host for SSH.
+To start the container once per student, run:
+```shell
+$ ./start_docker /path/to/users.txt
+```
+
+`users.txt` should contain one student per line, consisting of their name and a port.
+You can use the task's users.txt and modify it.
+
+This will open the ports from the file on the host for the students to SSH into with user `hdp` and password `123456`.
