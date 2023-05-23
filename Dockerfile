@@ -16,6 +16,6 @@ RUN ln -sf /usr/lib/linux-tools/5.15.0-72-generic/perf /usr/bin/perf && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11 && \
     useradd --create-home --shell /bin/bash hdp && echo "hdp:123456" | chpasswd
 
-COPY . /hdp-profiling-session
+RUN git clone https://github.com/hpides-teaching/hdp-profiling-session.git && chown -R hdp:hdp /hdp-profiling-session
 
 ENTRYPOINT service ssh restart && tail -f /dev/null
