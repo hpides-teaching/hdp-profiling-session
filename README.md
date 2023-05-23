@@ -4,7 +4,10 @@ Small code example to show how to use `perf` in our HDP lecture.
 
 To build and start the Docker container, run:
 ```shell
+# Build
 DOCKER_BUILDKIT=1 docker build -t hdp-profiling .
+
+# Run
 docker run -d \
     -v $(pwd):/hdp-profiling-session \
     --privileged \
