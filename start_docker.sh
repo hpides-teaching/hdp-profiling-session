@@ -26,7 +26,7 @@ while read -r user port; do
             --privileged \
             --restart always \
             --name "$docker_name" \
-            $DOCKER
+            hdp-profiling
 done < $USER_FILE
 
 
